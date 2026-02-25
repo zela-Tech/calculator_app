@@ -35,6 +35,35 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   static const Color kTopColor     = Color(0xFF7467D9); // (C, ±, %)
   static const Color kTextColor    = Color(0xFF48F58A);
 
+
+  String _display = '0';// tracks what's shown on the display area
+
+  //Allow users to enter numbers by tapping buttons
+  void _onButtonPressed(String label) {
+    setState(() {
+
+      if (label == 'C') {
+        // C or clear resets display back to zero
+        _display = '0';
+      } else if (label == '.') {
+        // check decimal point doesn't already exist
+        if (!_display.contains('.')) {
+          _display = '$_display.';
+        }
+      } else {
+        // Check if the label is a digit
+        final bool isDigit = int.tryParse(label) != null;
+        if (isDigit) {
+          // Append the digit
+          // ensure 0 is replaced with 1-9 so we avoid displaying 01, etc.
+          _display = _display == '0' ?label : '$_display$label';
+        }
+
+        //operator 
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -78,8 +107,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         color: kDisplayColor,
         borderRadius:BorderRadius.circular(25),
       ),
-      child: const Text(
-        '0', //placeholder until functionality is added
+      child: Text(
+        _display, //remove placeholder 0, now reads from state
         textAlign:TextAlign.right,
         style:TextStyle(
           color: kTextColor,
@@ -118,7 +147,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             label: label,
             color: _colorFor(label),
             isWide: label == '0', // the zero button spans double width
-            onPressed: () {},    
+            onPressed: () => _onButtonPressed(label),
           );
         }).toList(),
       ),
