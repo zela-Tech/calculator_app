@@ -44,62 +44,80 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   bool _waitingForSecond = false; // will become true when operator is presesd
   bool _hasResult = false;        // true after = is pressed
 
-  //Allow users to enter numbers by tapping buttons
+
+  // Utilize Dart functions for arithmetic calculations and control flow for user interactions
+
+  // Resets all states
+  void _handleClear() {
+    _display = '0';
+    _firstOperand = 0;
+    _operator = '';
+    _waitingForSecond = false;
+    _hasResult = false;
+  }
+
+  // Save the curr # and the chosen operator
+  void _handleOperator(String op) {
+    _firstOperand = double.tryParse(_display) ?? 0;
+    _operator = op;
+    _waitingForSecond = true;
+    _hasResult = false;
+  }
+
+  /// evaluates the expression...Calculate and write the result to the display
+  void _handleEquals() {
+    //only evaluate when a complete expression exists
+    if (_operator.isEmpty || _waitingForSecond) return;
+
+    final double secondOperand = double.tryParse(_display) ?? 0;
+    final double result = _performCalculation(_firstOperand, secondOperand, _operator);
+
+    _display = _formatResult(result);
+    _operator = '';
+    _waitingForSecond = false;
+    _hasResult = true;
+  }
+
+  void _handleDecimal() {
+    if (_waitingForSecond) {
+      _display = '0.';
+      _waitingForSecond = false;
+    } else if (!_display.contains('.')) {
+      _display = '$_display.';
+    }
+  }
+
+  void _handleDigit(String digit) {
+    // decide which mode we are currently in
+    if (_hasResult) {
+      // Start a new expression after seeing a result
+      _hasResult = false;
+    } else if (_waitingForSecond) { // Start typing the second operand
+      _display = digit;
+      _waitingForSecond = false;
+    } else { 
+      // Append the digit; ensure 0 is replaced with 1-9 so we avoid displaying 01, etc.
+      _display = _display == '0' ? digit : '$_display$digit';
+    }
+  }
+
+  // Routes each button pressed to the appropriate function
   void _onButtonPressed(String label) {
     setState(() {
-
       if (label == 'C') {
-        // Reset all states
-        _display = '0';
-        _firstOperand = 0;
-        _operator = '';
-        _waitingForSecond = false;
-        _hasResult = false;
-
+        _handleClear();
       } else if (['+', '-', '×', '÷'].contains(label)) {
-        // Save the curr # and the chosen operator
-        _firstOperand = double.tryParse(_display) ?? 0;
-        _operator = label;
-        _waitingForSecond = true;
-        _hasResult = false;
-
+        _handleOperator(label);
       } else if (label == '=') {
-        // Calculate and write the result to the display
-        if (_operator.isNotEmpty && !_waitingForSecond) {
-          final double secondOperand = double.tryParse(_display) ?? 0;
-          final double result = _performCalculation(
-              _firstOperand, secondOperand, _operator);
-
-          _display = _formatResult(result); // show result on display
-          _operator = '';
-          _waitingForSecond = false;
-          _hasResult = true;
-        }
-
+        _handleEquals();
       } else if (label == '.') {
-        // check decimal point doesn't already exist
-        if (!_display.contains('.')) {
-          _display = '$_display.';
-        }else if (_waitingForSecond) {
-          _display = '0.';
-          _waitingForSecond = false;
-        }
+        _handleDecimal();
       } else {
-        if (_hasResult) {
-          // Start a new expression after seeing a result
-          _display = label;
-          _hasResult = false;
-        }else if (_waitingForSecond) {
-          // Start typing the second operand
-          _display = label;
-          _waitingForSecond = false;
-        } else {
-          // Append the digit; ensure 0 is replaced with 1-9 so we avoid displaying 01, etc.
-          _display = _display == '0' ?label : '$_display$label';
-        }
+        _handleDigit(label);
       }
     });
   }
+
   // Calls the correct Dart operator based on the operator string
   double _performCalculation(double a, double b, String op) {
     if (op == '+') return a + b;
