@@ -113,6 +113,20 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       _display = '$_display.';
     }
   }
+  // Feature Percent Operation -- 
+    // Convert current number to percentage (divide by 100)
+    // Handle percentage in arithmetic operations (e.g., 200 + 10% = 220)
+  void _handlePercent() {
+    final double current = double.tryParse(_display) ?? 0;
+
+    if (_operator.isNotEmpty && !_waitingForSecond) {
+      // what is current% of the stored first operand?
+      _display = _formatResult(current / 100 * _firstOperand);
+    } else {
+      //  divide the current number by 100
+      _display = _formatResult(current / 100);
+    }
+  }
 
   void _handleDigit(String digit) {
     // clear if an error message is currently shown
@@ -141,7 +155,9 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     setState(() {
       if (label == 'C') {
         _handleClear();
-      } else if (['+', '-', '×', '÷'].contains(label)) {
+      } else if (label == '%') {
+        _handlePercent();
+      }else if (['+', '-', '×', '÷'].contains(label)) {
         _handleOperator(label);
       } else if (label == '=') {
         _handleEquals();
