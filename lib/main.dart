@@ -115,9 +115,13 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   }
 
   void _handleDigit(String digit) {
+    // clear if an error message is currently shown
+    final bool isShowingError = !_isValidNumber(_display);
+
     // decide which mode we are currently in
-    if (_hasResult) {
-      // Start a new expression after seeing a result
+    if (_hasResult || isShowingError) {  
+      // Start a new expression after seeing a result or error
+      _display = digit;
       _hasResult = false;
     } else if (_waitingForSecond) { // Start typing the second operand
       _display = digit;
@@ -126,6 +130,10 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       // Append the digit; ensure 0 is replaced with 1-9 so we avoid displaying 01, etc.
       _display = _display == '0' ? digit : '$_display$digit';
     }
+  }
+  //Used to detect when the display is showing an error str
+  bool _isValidNumber(String s) {
+    return double.tryParse(s) != null;
   }
 
   // Routes each button pressed to the appropriate function
@@ -214,7 +222,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         overflow: TextOverflow.ellipsis,
         style:TextStyle(
           color: kTextColor,
-          fontSize:40,
+          fontSize: _display.length > 10 ? 18 : 40, // shrink for error messages
           fontWeight: FontWeight.w300,
           letterSpacing: 2,
         ),
