@@ -64,13 +64,40 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     _hasResult = false;
   }
 
-  /// evaluates the expression...Calculate and write the result to the display
+  // evaluates the expression for... then Provide clear feedback to users about what went wrong
+    // 1. Handle cases where user presses "=" without complete input
+    // 2. Operator chosen but no second number entered
+    // 3. Detect division by zero attempts
   void _handleEquals() {
-    //only evaluate when a complete expression exists
-    if (_operator.isEmpty || _waitingForSecond) return;
+
+    // case 1: Handle cases where user presses "=" without complete input
+    if (_operator.isEmpty) {
+      _display = 'Enter operator';
+      _hasResult = false;
+      return;
+    }
+
+    // case 2: operator was chosen but second number not entered
+    if (_waitingForSecond) {
+      _display = 'Enter 2nd number';
+      _hasResult = false;
+      return;
+    }
 
     final double secondOperand = double.tryParse(_display) ?? 0;
-    final double result = _performCalculation(_firstOperand, secondOperand, _operator);
+
+    // case 3: division by zero
+    if (_operator == '÷' && secondOperand == 0) {
+      _display = 'Error';
+      _operator = '';
+      _waitingForSecond = false;
+      _hasResult = false;
+      return;
+    }
+
+    // if all checks are passed perform the calculation
+    final double result = _performCalculation(
+        _firstOperand, secondOperand, _operator);
 
     _display = _formatResult(result);
     _operator = '';
