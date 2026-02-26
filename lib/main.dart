@@ -127,7 +127,21 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       _display = _formatResult(current / 100);
     }
   }
+  //Add a "+/-" or "±" button to switch between positive and negative numbers.
+  void _handleToggleSign() {
+    // Edge Cases: don't toggle if showing '0', empty, or an error string
+    if (_display == '0' || _display.isEmpty || !_isValidNumber(_display)) {
+      return;
+    }
 
+    if (_display.startsWith('-')) {
+      // in the case it's already negative: remove the leading minus to make it positive
+      _display = _display.substring(1);
+    } else {
+      // in the case it's positive — prepend a minus sign to make it negative
+      _display = '-$_display';
+    }
+  }
   void _handleDigit(String digit) {
     // clear if an error message is currently shown
     final bool isShowingError = !_isValidNumber(_display);
@@ -157,7 +171,9 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         _handleClear();
       } else if (label == '%') {
         _handlePercent();
-      }else if (['+', '-', '×', '÷'].contains(label)) {
+      } else if (label == '±') {
+        _handleToggleSign();
+      } else if (['+', '-', '×', '÷'].contains(label)) {
         _handleOperator(label);
       } else if (label == '=') {
         _handleEquals();
